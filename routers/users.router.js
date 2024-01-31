@@ -92,6 +92,7 @@ router.post('/sign-in', async (req, res, next) => {
   const accessToken = jwt.sign(
     {
       userId: user.userId,
+      role: user.role,
     },
     process.env.SECRET_KEY,
     {
@@ -104,7 +105,7 @@ router.post('/sign-in', async (req, res, next) => {
 });
 
 /** 내 정보 조회 API */
-router.get('/user', authMiddleware, async (req, res, next) => {
+router.get('/users', authMiddleware, async (req, res, next) => {
   const { userId } = req.user;
   const user = await prisma.users.findFirst({
     where: { userId: +userId },
@@ -123,7 +124,33 @@ router.get('/user', authMiddleware, async (req, res, next) => {
       },
     },
   });
-  return res.status(200).json({ userData: user });
+  return res.status(200).json({ data: user });
+});
+
+/** 내 정보 수정 API */
+router.patch('/users', authMiddleware, async (req, res, next) => {
+  try {
+    const updateData = req.body; // name, age, gender, profileImage
+    const { userId } = req.user;
+    const userInfo = await prisma.userInfos.findFirst({
+      where: { userId: +userId },
+    });
+    if (!userInfo)
+      return res
+        .status(404)
+        .json({ message: '사용자 정보가 존재하지 않습니다.' });
+    // into DB
+    const updatedUserInfo = await prisma.userInfos.update({
+      data: { ...updateData },
+      where: { userId: +userId },
+    });
+    return res.status(200).json({
+      message: '성공적으로 수정이 완료되었습니다.',
+      data: updatedUserInfo,
+    });
+  } catch (err) {
+    next(err);
+  }
 });
 
 export default router;
