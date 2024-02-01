@@ -2,7 +2,7 @@ import express from 'express';
 import { prisma } from '../models/index.js';
 import { Prisma } from '@prisma/client';
 import authMiddleware from '../middlewares/auth.middleware.js';
-import authAdminMiddleware from '../middlewares/auth-admin.middleware.js';
+import authHrmanagerMiddleware from '../middlewares/auth-hrmanager.middleware.js';
 
 const router = express.Router();
 
@@ -93,7 +93,7 @@ router.get('/resumes/:resumeId', authMiddleware, async (req, res, next) => {
   try {
     const { resumeId } = req.params;
     let resume = {};
-    if (req.user.role === 'ADMIN') {
+    if (req.user.role === 'HR_MANAGER') {
       resume = await prisma.$transaction(
         async (tx) => {
           const resume = await tx.resumes.findFirst({
@@ -120,6 +120,7 @@ router.get('/resumes/:resumeId', authMiddleware, async (req, res, next) => {
       );
     } else {
       const data = await prisma.users.findFirst({
+        where: { userId: +req.user.userId },
         select: {
           userInfos: {
             select: { name: true, gender: true, age: true, profileImage: true },
@@ -142,9 +143,8 @@ router.get('/resumes/:resumeId', authMiddleware, async (req, res, next) => {
 
     if (!resume)
       return res.status(404).json({ message: '이력서 조회에 실패하였습니다.' });
-    // DB에서 가져온 resume의 userId와 비교
-    //만약 요청한 이력서가 로그인한 사용자가 작성한 이력서가 아니라면 resume은 비어있을 것(where:{resumeId}조건에 의해), 따라서 가져온 resume의 userId는 undefined
-    if (resume.userId !== req.user.userId && req.user.role !== 'ADMIN')
+
+    if (resume.userId !== req.user.userId && req.user.role !== 'HR_MANAGER')
       return res.status(401).json({ message: '권한이 없습니다.' });
 
     return res.status(200).json({
@@ -160,7 +160,7 @@ router.get('/resumes/:resumeId', authMiddleware, async (req, res, next) => {
 router.get(
   '/resumes',
   authMiddleware,
-  authAdminMiddleware,
+  authHrmanagerMiddleware,
   async (req, res, next) => {
     try {
       const { orderKey, orderValue } = req.query;
@@ -204,7 +204,7 @@ router.get(
 router.patch(
   '/resumes/:resumeId/changeStatus',
   authMiddleware,
-  authAdminMiddleware,
+  authHrmanagerMiddleware,
   async (req, res, next) => {
     try {
       const { resumeId } = req.params;
