@@ -83,11 +83,11 @@ router.post('/sign-in', async (req, res, next) => {
   const user = await prisma.users.findFirst({ where: { email } });
   if (!user)
     return res
-      .status(401)
+      .status(412)
       .json({ message: '이름 또는 패스워드를 확인해주세요.' });
 
   if (!(await bcrypt.compare(password, user.password)))
-    return res.status(401).json({ message: '비밀번호가 일치하지 않습니다.' });
+    return res.status(412).json({ message: '비밀번호가 일치하지 않습니다.' });
 
   const accessToken = jwt.sign(
     {
