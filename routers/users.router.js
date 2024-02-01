@@ -15,9 +15,9 @@ const registerSchema = joi.object({
   name: joi
     .string()
     .min(1)
-    .max(10)
+    .max(30)
     .required()
-    .messages({ 'string.max': '이름은 10글자 이내의 문자열입니다. ' }),
+    .messages({ 'string.max': '이름은 30글자 이내의 문자열입니다. ' }),
   password: joi
     .string()
     .pattern(new RegExp('^(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{6,30}$'))
@@ -94,12 +94,52 @@ router.post('/sign-in', async (req, res, next) => {
       userId: user.userId,
       role: user.role,
     },
-    process.env.SECRET_KEY,
+    process.env.ACCESS_SECRET_KEY,
     {
       expiresIn: '12h',
     }
   );
-  res.cookie('Authorization', `Bearer ${accessToken}`);
+  const refreshToken = jwt.sign(
+    {
+      userId: user.userId,
+      role: user.role,
+    },
+    process.env.REFRESH_SECRET_KEY,
+    {
+      expiresIn: '7d',
+    }
+  );
+
+  // refresh token DB에 저장하기
+  const isExistRefreshToken = await prisma.refreshTokens.findFirst({
+    where: { userId: user.userId },
+  });
+  // 이미 존재한다면 DB의 refresh token 수정하기
+  if (isExistRefreshToken) {
+    await prisma.refreshTokens.update({
+      where: { userId: user.userId },
+      data: {
+        token: refreshToken,
+        ip: req.ip,
+        userAgent: req.headers['user-agent'],
+        expiresAt: new Date(new Date().setDate(new Date().getDate() + 7)),
+        createdAt: new Date(),
+      },
+    });
+  } else {
+    await prisma.refreshTokens.create({
+      data: {
+        userId: user.userId,
+        token: refreshToken,
+        ip: req.ip,
+        userAgent: req.headers['user-agent'],
+        expiresAt: new Date(new Date().setDate(new Date().getDate() + 7)),
+      },
+    });
+  }
+
+  res.cookie('accessToken', accessToken);
+  res.cookie('refreshToken', refreshToken);
 
   return res.status(200).json({ message: '로그인에 성공하였습니다.' });
 });

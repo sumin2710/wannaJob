@@ -21,8 +21,9 @@ model Users {
   createdAt DateTime @default(now()) @map("createdAt")
   updatedAt DateTime @updatedAt @map("updatedAt")
 
-  userInfos UserInfos? // 1:1, User는 UserInfo를 가질수도 안가질수도 있다. 
-  resumes   Resumes[] // 1: N , User는 Resume를 여러개 가질 수 있다.
+  userInfos     UserInfos? // 1:1, User는 UserInfo를 가질수도 안가질수도 있다. 
+  resumes       Resumes[] // 1: N , User는 Resume를 여러개 가질 수 있다.
+  refreshTokens RefreshTokens? // 1:1
 
   @@map("Users")
 }
@@ -66,4 +67,19 @@ model Resumes {
   user Users @relation(fields: [userId], references: [userId], onDelete: Cascade, onUpdate: Cascade)
 
   @@map("Resumes")
+}
+
+model RefreshTokens {
+  tokenId Int @id @default(autoincrement()) @map("tokenId")
+  userId  Int @unique @map("userId") // 1사용자당 1토큰
+
+  token     String   @map("token")
+  ip        String   @map("ip")
+  userAgent String   @map("userAgent")
+  createdAt DateTime @default(now()) @map("createdAt")
+  expiresAt DateTime @map("expiresAt")
+
+  user Users @relation(fields: [userId], references: [userId], onDelete: Cascade)
+
+  @@map("RefreshTokens")
 }
