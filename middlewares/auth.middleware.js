@@ -18,9 +18,7 @@ export default async function (req, res, next) {
     if (err.name === 'TokenExpiredError') {
       createNewAccessToken(req, res);
     } else if (err.name === 'JsonWebTokenError') {
-      return res
-        .status(401)
-        .json({ message: '토큰이 조작되었습니다.', m: err.message });
+      return res.status(401).json({ message: '토큰이 조작되었습니다.' });
     } else {
       return res.status(400).json({ message: err.message });
     }
@@ -72,10 +70,9 @@ async function createNewAccessToken(req, res) {
     process.env.ACCESS_SECRET_KEY,
     { expiresIn: '7d' }
   );
-  console.log('액세스', newAccessToken);
 
   return res
     .cookie('accessToken', newAccessToken)
     .status(200)
-    .json({ message: 'accesstoken이 발급되었습니다.' });
+    .json({ message: 'accesstoken이 새로 발급되었습니다. 다시 요청해주세요.' });
 }
