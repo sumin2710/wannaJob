@@ -194,3 +194,210 @@ router.patch('/users', authMiddleware, async (req, res, next) => {
 });
 
 export default router;
+/**
+ * @swagger
+ *  /api/sign-up:
+ *    post:
+ *      summary: 회원가입
+ *      requestBody:
+ *        required: true
+ *        content:
+ *          application/json:
+ *            schema:
+ *              $ref: '#/components/schemas/Sign_up_request_body'
+ *      responses:
+ *        200:
+ *          description: 회원가입 성공
+ */
+/**
+ * @swagger
+ *  /api/sign-in:
+ *    post:
+ *      summary: 로그인
+ *      requestBody:
+ *        required: true
+ *        content:
+ *          application/json:
+ *            schema:
+ *              $ref: '#/components/schemas/Login_request_body'
+ *      responses:
+ *        200:
+ *          description: 로그인 성공
+ *          headers:
+ *            Set-Cookie:
+ *              schema:
+ *                type: string
+ *                example: accessToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjIsInJvbGUiOiJIUl9NQU5BR0VSIiwiaWF0IjoxNzA2NzkzMjQ0LCJleHAiOjE3MDczOTgwNDR9.QTXz7wYBtziUtPATlwQxr4ZCtZFl55M6TygdokKveNI; Path=/; Domain=localhost,refreshToken=...
+ */
+/**
+ *@swagger
+ *  /api/users:
+ *   get:
+ *     summary: req header의 userId를 가지고 내 정보를 조회
+ *     responses:
+ *       200:
+ *         description: 조회 성공
+ *       400:
+ *         description: bad request
+ *       401:
+ *         description: 토큰이 조작되었습니다
+ */
+/**
+ * @swagger
+ *  /api/users:
+ *    patch:
+ *      summary: 내 정보를 수정
+ *      requestBody:
+ *        required: true
+ *        content:
+ *          application/json:
+ *            schema:
+ *              $ref: '#/components/schemas/Patch_user_request_body'
+ *      responses:
+ *        200:
+ *          description: 수정 성공
+ *        404:
+ *          description: 사용자 정보가 존재하지 않습니다
+ */
+/**
+ * @swagger
+ * components:
+ *  schemas:
+ *    Users:
+ *      type: object
+ *      properties:
+ *        userId:
+ *          type: integer
+ *          format: int32
+ *          example: 1
+ *        email:
+ *          type: string
+ *          format: email
+ *          example: park@gmail.com
+ *        password:
+ *          type: string
+ *          format: password
+ *          example: dddddn*
+ *        createdAt:
+ *          type: string
+ *          format: date-time
+ *          example: 2017-07-21T17:32:28Z
+ *        updatedAt:
+ *          type: string
+ *          format: date-time
+ *          example: 2017-07-21T17:32:28Z
+ *        role:
+ *          type: string
+ *          example: USER
+ */
+/**
+ * @swagger
+ * components:
+ *  schemas:
+ *    UserInfos:
+ *      type: object
+ *      properties:
+ *        userId:
+ *          type: integer
+ *          format: int32
+ *          example: 1
+ *        name:
+ *          type: string
+ *          example: park
+ *        age:
+ *          type: integer
+ *          format: int32
+ *          example: 20
+ *        gender:
+ *          type: string
+ *          example: female
+ *        profileImage:
+ *          type: string
+ *          example: img.png
+ *        createdAt:
+ *          type: string
+ *          format: date-time
+ *          example: 2017-07-21T17:32:28Z
+ *        updatedAt:
+ *          type: string
+ *          format: date-time
+ *          example: 2017-07-21T17:32:28Z
+ */
+/**
+ * @swagger
+ * components:
+ *  schemas:
+ *    Sign_up_request_body:
+ *      type: object
+ *      properties:
+ *        email:
+ *          type: string
+ *          format: email
+ *          example: mocha@gmail.com
+ *        password:
+ *          type: string
+ *          format: password
+ *          example: skjfljdksf%
+ *        checkPassword:
+ *          type: string
+ *          format: password
+ *          example: skjfljdksf%
+ *        name:
+ *          type: string
+ *          example: Mocha
+ *    Login_request_body:
+ *      type: object
+ *      properties:
+ *        email:
+ *          type: string
+ *          format: email
+ *          example: manager@gmail.com
+ *        password:
+ *          type: string
+ *          format: password
+ *          example: dddddd*
+ *    Patch_user_request_body:
+ *      type: object
+ *      properties:
+ *        name:
+ *          type: string
+ *          example: Mochas
+ *        age:
+ *          type: integer
+ *          format: int32
+ *          example: 22
+ *        gender:
+ *          type: string
+ *          example: female
+ *        profileImage:
+ *          type: string
+ *          example: img.png
+ *    Get_user_result:
+ *      type: object
+ *      properties:
+ *        userId:
+ *          type: integer
+ *          format: int32
+ *          example: 2
+ *        email:
+ *          type: string
+ *          format: email
+ *          example: manager@gmail.com
+ *        createdAt:
+ *          type: string
+ *          format: date-time
+ *          example: 2024-02-01T11:41:05.455Z
+ *        name:
+ *          type: string
+ *          example: 김박
+ *        age:
+ *          type: integer
+ *          example: 32
+ *        gender:
+ *          type: string
+ *          example: female
+ *        profileImage:
+ *          type: string
+ *          example: image.png
+ *
+ */

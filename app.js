@@ -5,11 +5,21 @@ import AdminRouter from './routers/admin.router.js';
 import ResumesRouter from './routers/resumes.router.js';
 import errorHandlingMiddleware from './middlewares/error-handling.middleware.js';
 import cookieParser from 'cookie-parser';
+import options from './swagger.js';
+import swaggerJSDoc from 'swagger-jsdoc';
+import swaggerUi from 'swagger-ui-express';
 
 dotenv.config();
 
 const app = express();
 const PORT = 3032;
+
+const specs = swaggerJSDoc(options);
+app.use(
+  '/api-docs',
+  swaggerUi.serve,
+  swaggerUi.setup(specs, { explorer: true })
+);
 
 app.use(express.json());
 app.use(cookieParser());

@@ -249,3 +249,84 @@ router.patch(
   }
 );
 export default router;
+
+/**
+ * @swagger
+ *  /api/resumes:
+ *    post:
+ *      summary: 이력서 생성
+ *      requestBody:
+ *        required: true
+ *        content:
+ *          application/json:
+ *            schema:
+ *              $ref: '#/components/schemas/Create_resumes_request_body'
+ *      responses:
+ *        201:
+ *          description: 생성 성공
+ *          content:
+ *            application/json:
+ *              schema:
+ *                $ref: '#/components/schemas/Resumes'
+ *
+ */
+/**
+ * @swagger
+ *  /api/resumes/{resumeId}:
+ *    delete:
+ *      summary: 이력서 삭제
+ *      parameters:
+ *        - in: path
+ *          name: resumeId
+ *          schema:
+ *            type: integer
+ *          required: true
+ *          description: 이력서 ID
+ *      responses:
+ *        200:
+ *          description: 삭제 성공
+ *        404:
+ *          description: 이력서 조회에 실패하였습니다
+ *        401:
+ *          삭제 권한이 없습니다
+ */
+/**
+ * @swagger
+ * components:
+ *  schemas:
+ *    Create_resumes_request_body:
+ *      type: object
+ *      properties:
+ *        title:
+ *          type: string
+ *          example: 이력서 제목
+ *        introduction:
+ *          type: string
+ *          example: 자기소개
+ *        hobby:
+ *          type: string
+ *          example: 독서
+ *    Resumes:
+ *      type: object
+ *      properties:
+ *        resumeId:
+ *          type: integer
+ *          example: 2
+ *        userId:
+ *          type: integer
+ *          example: 2
+ *        title:
+ *          type: string
+ *        introduction:
+ *          type: string
+ *        hobby:
+ *          type: string
+ *        status:
+ *          type: string
+ *        createdAt:
+ *          type: string
+ *          format: date-time
+ *        updatedAt:
+ *          type: string
+ *          format: date-time
+ */
