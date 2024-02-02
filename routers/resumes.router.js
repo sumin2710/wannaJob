@@ -280,17 +280,141 @@ export default router;
  *          name: resumeId
  *          schema:
  *            type: integer
- *          required: true
- *          description: 이력서 ID
+ *            example: 7
+ *            required: true
+ *            description: 이력서 ID
  *      responses:
  *        200:
  *          description: 삭제 성공
  *        404:
  *          description: 이력서 조회에 실패하였습니다
  *        401:
- *          삭제 권한이 없습니다
+ *          description: 삭제 권한이 없습니다
+ *
  */
 /**
+ * @swagger
+ *  /api/resumes/{resumeId}:
+ *    patch:
+ *      summary: 이력서 수정
+ *      parameters:
+ *        - in: path
+ *          name: resumeId
+ *          schema:
+ *            type: integer
+ *            example: 8
+ *            required: true
+ *            description: 이력서 ID
+ *      requestBody:
+ *        required: true
+ *        content:
+ *          application/json:
+ *            schema:
+ *              $ref: '#/components/schemas/Create_resumes_request_body'
+ *      responses:
+ *        200:
+ *          description: 수정 성공
+ *        404:
+ *          description: 이력서 조회에 실패하였습니다
+ *        401:
+ *          description: 수정 권한이 없습니다
+ *        412:
+ *          description: 이력서의 상태는 APPLY, DROP, PASS, INTERVIEW1, INTERVIEW2, FINAL_PASS 중 하나여야 합니다
+ *
+ */
+/**
+ * @swagger
+ *  /api/resumes/{resumeId}:
+ *    get:
+ *      summary: 이력서 상세 조회(사용자는 본인의 이력서만, 인사담당자는 전부 가능)
+ *      parameters:
+ *        - in: path
+ *          name: resumeId
+ *          schema:
+ *            type: integer
+ *            example: 8
+ *            required: true
+ *            description: 이력서 ID
+ *      responses:
+ *        200:
+ *          description: 조회 성공
+ *          content:
+ *            application/json:
+ *              schema:
+ *                $ref: '#/components/schemas/Get_resumes_detail'
+ *        404:
+ *          description: 이력서 조회에 실패하였습니다
+ *        401:
+ *          description: 권한이 없습니다
+ */
+/**
+ * @swagger
+ *  /api/resumes:
+ *    get:
+ *      summary: 모든 이력서 목록 조회(인사 담당자 계정이어야 가능)
+ *      parameters:
+ *        - in: query
+ *          name: orderKey
+ *          schema:
+ *            type: string
+ *            example: userId
+ *            required: true
+ *            description: 정렬기준이 될 컬럼
+ *        - in: query
+ *          name: orderValue
+ *          schema:
+ *            type: string
+ *            example: desc
+ *            required: true
+ *            description: 정렬 방향
+ *      responses:
+ *        200:
+ *          description: 조회 성공
+ *          content:
+ *            application/json:
+ *              schema:
+ *                $ref: '#/components/schemas/Get_resumes_list'
+ *        400:
+ *          description: 정렬기준이 될 컬럼과 정렬 방향을 지정해주세요
+ *        404:
+ *          description: 이력서 조회에 실패하였습니다
+ *        401:
+ *          description: 권한이 없습니다
+ *
+ */
+/**
+ * @swagger
+ *  /api/resumes/{resumeId}/changeStatus:
+ *    patch:
+ *      summary: 이력서의 상태만 변경(인사담당자만 가능)
+ *      parameters:
+ *        - in: path
+ *          name: resumeId
+ *          schema:
+ *            type: integer
+ *            example: 4
+ *            required: true
+ *            description: 이력서 ID
+ *      requestBody:
+ *        required: true
+ *        content:
+ *          application/json:
+ *            schema:
+ *              $ref: '#/components/schemas/Update_resumes_status_request_body'
+ *      responses:
+ *        200:
+ *          description: 수정 성공
+ *        400:
+ *          description: 변경할 상태를 입력해주세요. 이력서의 상태는 APPLY, DROP, PASS, INTERVIEW1, INTERVIEW2, FINAL_PASS 중 하나여야 합니다
+ *        404:
+ *          description: 이력서 조회에 실패하였습니다
+ *        401:
+ *          description: 수정 권한이 없습니다
+ *        412:
+ *          description: 이력서의 상태는 APPLY, DROP, PASS, INTERVIEW1, INTERVIEW2, FINAL_PASS 중 하나여야 합니다
+ */
+/**
+ *
  * @swagger
  * components:
  *  schemas:
@@ -306,6 +430,58 @@ export default router;
  *        hobby:
  *          type: string
  *          example: 독서
+ *    Update_resumes_status_request_body:
+ *      type: object
+ *      properties:
+ *        status:
+ *          type: string
+ *          example: PASS
+ *    Get_resumes_list:
+ *      type: array
+ *      items:
+ *        type: object
+ *        properties:
+ *          userId:
+ *            type: integer
+ *          name:
+ *            type: string
+ *          resumeId:
+ *            type: integer
+ *          title:
+ *            type: string
+ *          introduction:
+ *            type: string
+ *          hobby:
+ *            type: string
+ *          status:
+ *            type: string
+ *          createdAt:
+ *            type: string
+ *            format: date-time
+ *    Get_resumes_detail:
+ *      type: object
+ *      properties:
+ *        name:
+ *          type: string
+ *        gender:
+ *          type: string
+ *        age:
+ *          type: integer
+ *        profileImage:
+ *          type: string
+ *        userId:
+ *          type: integer
+ *        title:
+ *          type: string
+ *        introduction:
+ *          type: string
+ *        hobby:
+ *          type: string
+ *        status:
+ *          type: string
+ *        createdAt:
+ *          type: string
+ *          format: date-time
  *    Resumes:
  *      type: object
  *      properties:
