@@ -11,7 +11,7 @@
 
 # API 명세서 URL
 
-- swagger로 작성했습니다.
+- http://13.211.141.94:3032/api-docs/
 
 # ERD URL
 
