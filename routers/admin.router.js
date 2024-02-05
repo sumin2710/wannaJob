@@ -1,6 +1,6 @@
 import express from 'express';
 import { prisma } from '../models/index.js';
-import authAdminMiddleware from '../middlewares/auth-admin.middleware.js';
+import { checkRole } from '../middlewares/auth-restrict.middleware.js';
 import authMiddleware from '../middlewares/auth.middleware.js';
 
 const router = express.Router();
@@ -9,7 +9,7 @@ const router = express.Router();
 router.patch(
   '/upgrade/:userId',
   authMiddleware,
-  authAdminMiddleware,
+  checkRole('ADMIN'),
   async (req, res, next) => {
     try {
       const { whichRole } = req.body;
@@ -39,7 +39,7 @@ router.patch(
 // router.delete(
 //   '/delete/:userId',
 //   authMiddleware,
-//   authAdminMiddleware,
+//   checkRole('ADMIN'),
 //   async (req, res, next) => {
 //     try {
 //       const { userId } = req.params;

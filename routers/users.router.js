@@ -70,7 +70,7 @@ router.post('/sign-up', async (req, res, next) => {
     );
     return res.status(201).json({
       message: '회원가입이 완료되었습니다.',
-      userData: `이메일: ${email}, 이름 : ${name}`,
+      userData: user,
     });
   } catch (err) {
     next(err);

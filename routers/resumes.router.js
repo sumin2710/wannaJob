@@ -2,7 +2,7 @@ import express from 'express';
 import { prisma } from '../models/index.js';
 import { Prisma } from '@prisma/client';
 import authMiddleware from '../middlewares/auth.middleware.js';
-import authHrmanagerMiddleware from '../middlewares/auth-hrmanager.middleware.js';
+import { checkRole } from '../middlewares/auth-restrict.middleware.js';
 
 const router = express.Router();
 
@@ -88,12 +88,51 @@ router.patch('/resumes/:resumeId', authMiddleware, async (req, res, next) => {
   }
 });
 
+/** 내 이력서 전체 조회 API */
+router.get('/resumes/me', authMiddleware, async (req, res, next) => {
+  try {
+    const resumeList =
+      (await prisma.resumes.findMany({
+        select: {
+          resumeId: true,
+          title: true,
+          introduction: true,
+          status: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      })) || [];
+    return res.status(200).json({ data: resumeList });
+  } catch (err) {
+    next(err);
+  }
+});
+
 /** 이력서 상세 조회 API (사용자는 본인의 이력서만, 인사담당자는 전부 열람 가능) */
 router.get('/resumes/:resumeId', authMiddleware, async (req, res, next) => {
   try {
     const { resumeId } = req.params;
     let resume = {};
     if (req.user.role === 'HR_MANAGER') {
+      // resume = await prisma.users.findFirst({
+      //   include: {
+      //     resumes: {
+      //       where: { resumeId: +resumeId },
+      //       select: {
+      //         userId: true,
+      //         title: true,
+      //         introduction: true,
+      //         hobby: true,
+      //         status: true,
+      //         createdAt: true,
+      //       },
+      //     },
+      //     userInfos: {
+      //       where: { userId: +userId }, // userId is not defined 에러 나서 어쩔 수 없이 트랜잭션으로...
+      //       select: { name: true, gender: true, age: true, profileImage: true },
+      //     },
+      //   },
+      // });
       resume = await prisma.$transaction(
         async (tx) => {
           const resume = await tx.resumes.findFirst({
@@ -160,7 +199,7 @@ router.get('/resumes/:resumeId', authMiddleware, async (req, res, next) => {
 router.get(
   '/resumes',
   authMiddleware,
-  authHrmanagerMiddleware,
+  checkRole('HR_MANAGER'),
   async (req, res, next) => {
     try {
       const { orderKey, orderValue } = req.query;
@@ -204,7 +243,7 @@ router.get(
 router.patch(
   '/resumes/:resumeId/changeStatus',
   authMiddleware,
-  authHrmanagerMiddleware,
+  checkRole('HR_MANAGER'),
   async (req, res, next) => {
     try {
       const { resumeId } = req.params;
@@ -404,6 +443,10 @@ export default router;
  *      responses:
  *        200:
  *          description: 수정 성공
+ *          content:
+ *            application/json:
+ *              schema:
+ *                $ref: '#/components/schemas/Get_resumes_detail'
  *        400:
  *          description: 변경할 상태를 입력해주세요. 이력서의 상태는 APPLY, DROP, PASS, INTERVIEW1, INTERVIEW2, FINAL_PASS 중 하나여야 합니다
  *        404:
@@ -412,6 +455,23 @@ export default router;
  *          description: 수정 권한이 없습니다
  *        412:
  *          description: 이력서의 상태는 APPLY, DROP, PASS, INTERVIEW1, INTERVIEW2, FINAL_PASS 중 하나여야 합니다
+ */
+/**
+ * @swagger
+ *  /api/resumes/me:
+ *    get:
+ *      summary: 내 이력서 전체 조회
+ *      responses:
+ *        200:
+ *          description: 조회 성공
+ *          content:
+ *            application/json:
+ *              schema:
+ *                $ref: '#/components/schemas/Get_resumes_detail'
+ *        404:
+ *          description: 이력서 조회에 실패하였습니다
+ *        401:
+ *          description: 권한이 없습니다
  */
 /**
  *
