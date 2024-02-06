@@ -117,7 +117,7 @@ router.post('/sign-up', async (req, res, next) => {
 
 /** 로그인 API */
 router.post('/sign-in', async (req, res, next) => {
-  const { clientId, email, password } = req.body;
+  const { clientId } = req.body;
   let user;
   if (clientId) {
     // 카카오 로그인
@@ -128,6 +128,7 @@ router.post('/sign-in', async (req, res, next) => {
         .json({ message: '클라이언트 아이디를 확인해주세요.' });
   } else {
     // 일반(이메일) 로그인
+    const { email, password } = req.body;
     user = await prisma.users.findFirst({ where: { email } });
     if (!user)
       return res
