@@ -93,6 +93,7 @@ router.get('/resumes/me', authMiddleware, async (req, res, next) => {
   try {
     const resumeList =
       (await prisma.resumes.findMany({
+        where: { userId: +req.user.userId },
         select: {
           resumeId: true,
           title: true,
@@ -180,12 +181,10 @@ router.get('/resumes/:resumeId', authMiddleware, async (req, res, next) => {
       resume = Object.assign({}, data.userInfos, ...data.resumes);
     }
 
-    if (!resume)
+    if (!resume.resumeId)
       return res.status(404).json({ message: '이력서 조회에 실패하였습니다.' });
-
     if (resume.userId !== req.user.userId && req.user.role !== 'HR_MANAGER')
       return res.status(401).json({ message: '권한이 없습니다.' });
-
     return res.status(200).json({
       message: '상세 조회에 성공하였습니다.',
       data: resume,

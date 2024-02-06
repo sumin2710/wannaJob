@@ -34,43 +34,81 @@ const registerSchema = joi.object({
 /** 회원가입 API */
 router.post('/sign-up', async (req, res, next) => {
   try {
-    const validation = await registerSchema.validateAsync(req.body);
-    const { email, name, password, checkPassword } = validation;
+    const { clientId, name } = req.body;
+    let user, userInfo;
 
-    const isExistUser = await prisma.users.findFirst({
-      where: { email },
-    });
-    if (isExistUser)
-      return res.status(409).json({ message: '이미 존재하는 사용자입니다.' });
+    if (clientId) {
+      // 카카오 회원가입
+      const isExistUser = await prisma.users.findFirst({
+        where: { clientId },
+      });
+      if (isExistUser)
+        return res.status(409).json({ message: '이미 존재하는 사용자입니다.' });
 
-    if (password !== checkPassword)
-      return res.status(412).json({ message: '비밀번호가 일치하지 않습니다.' });
+      // into DB
+      [user, userInfo] = await prisma.$transaction(
+        async (tx) => {
+          const user = await tx.users.create({
+            data: {
+              clientId,
+            },
+          });
+          const userInfo = await tx.userInfos.create({
+            data: {
+              userId: user.userId,
+              name,
+            },
+          });
+          return [user, userInfo];
+        },
+        {
+          isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted,
+        }
+      );
+    } else {
+      // 일반 회원가입
+      const validation = await registerSchema.validateAsync(req.body);
+      const { email, name, password, checkPassword } = validation;
 
-    // into DB
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const [user, userInfo] = await prisma.$transaction(
-      async (tx) => {
-        const user = await tx.users.create({
-          data: {
-            email,
-            password: hashedPassword,
-          },
-        });
-        const userInfo = await tx.userInfos.create({
-          data: {
-            userId: user.userId,
-            name,
-          },
-        });
-        return [user, userInfo];
-      },
-      {
-        isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted,
-      }
-    );
+      const isExistUser = await prisma.users.findFirst({
+        where: { email },
+      });
+      if (isExistUser)
+        return res.status(409).json({ message: '이미 존재하는 사용자입니다.' });
+
+      if (password !== checkPassword)
+        return res
+          .status(412)
+          .json({ message: '비밀번호가 일치하지 않습니다.' });
+
+      // into DB
+      const hashedPassword = await bcrypt.hash(password, 10);
+      [user, userInfo] = await prisma.$transaction(
+        async (tx) => {
+          const user = await tx.users.create({
+            data: {
+              email,
+              password: hashedPassword,
+            },
+          });
+          const userInfo = await tx.userInfos.create({
+            data: {
+              userId: user.userId,
+              name,
+            },
+          });
+          return [user, userInfo];
+        },
+        {
+          isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted,
+        }
+      );
+    }
+
     return res.status(201).json({
       message: '회원가입이 완료되었습니다.',
-      userData: user,
+      user: user,
+      userInfo: userInfo,
     });
   } catch (err) {
     next(err);
@@ -79,15 +117,26 @@ router.post('/sign-up', async (req, res, next) => {
 
 /** 로그인 API */
 router.post('/sign-in', async (req, res, next) => {
-  const { email, password } = req.body;
-  const user = await prisma.users.findFirst({ where: { email } });
-  if (!user)
-    return res
-      .status(412)
-      .json({ message: '이름 또는 패스워드를 확인해주세요.' });
+  const { clientId, email, password } = req.body;
+  let user;
+  if (clientId) {
+    // 카카오 로그인
+    user = await prisma.users.findFirst({ where: { clientId } });
+    if (!user)
+      return res
+        .status(412)
+        .json({ message: '클라이언트 아이디를 확인해주세요.' });
+  } else {
+    // 일반(이메일) 로그인
+    user = await prisma.users.findFirst({ where: { email } });
+    if (!user)
+      return res
+        .status(412)
+        .json({ message: '이름 또는 패스워드를 확인해주세요.' });
 
-  if (!(await bcrypt.compare(password, user.password)))
-    return res.status(412).json({ message: '비밀번호가 일치하지 않습니다.' });
+    if (!(await bcrypt.compare(password, user.password)))
+      return res.status(412).json({ message: '비밀번호가 일치하지 않습니다.' });
+  }
 
   const accessToken = jwt.sign(
     {
