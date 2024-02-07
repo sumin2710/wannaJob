@@ -18,8 +18,23 @@ model Users {
   refreshTokens RefreshTokens?
   resumes       Resumes[]
   userInfos     UserInfos?
+  followedBy    Follows[]      @relation("followedBy")
+  following     Follows[]      @relation("following")
 
   @@map("Users")
+}
+
+model Follows {
+  followedBy   Users @relation("followedBy", fields: [followedById], references: [userId])
+  followedById Int   @map("followedById")
+  following    Users @relation("following", fields: [followingId], references: [userId])
+  followingId  Int   @map("followingId")
+
+  createdAt DateTime @default(now()) @map("createdAt")
+  updatedAt DateTime @updatedAt @map("updatedAt")
+
+  @@id([followedById, followingId])
+  @@map("Follows")
 }
 
 model UserInfos {
