@@ -155,12 +155,16 @@ router.get('/following/resumes', authMiddleware, async (req, res, next) => {
       userId: true,
     },
   });
+  console.log(followingUsersIdList);
   if (followingUsersIdList.length == 0)
     return res.status(404).json({ message: '게시물이 없습니다.' });
   followingUsersIdList = followingUsersIdList.map((v) => v.userId);
   console.log(followingUsersIdList);
+
   const resumes = await prisma.resumes.findMany({
-    where: { userId: { in: followingUsersIdList } },
+    where: {
+      userId: { in: followingUsersIdList },
+    },
   });
   return res.status(200).json({ resumes });
 });
