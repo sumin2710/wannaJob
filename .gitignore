@@ -1,4 +1,4 @@
 node_modules
 .env
-app copy.js
-app copy 2.js
+app.copy.js
+app.copy2.js
