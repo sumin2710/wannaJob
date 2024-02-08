@@ -6,6 +6,36 @@ import authMiddleware from '../middlewares/auth.middleware.js';
 import joi from 'joi';
 import jwt from 'jsonwebtoken';
 
+import multer from 'multer';
+import {
+  S3Client,
+  PutObjectCommand,
+  GetObjectCommand,
+  DeleteObjectCommand,
+} from '@aws-sdk/client-s3';
+import crypto from 'crypto';
+import sharp from 'sharp';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+
+const bucketName = process.env.BUCKET_NAME;
+const bucketRegion = process.env.BUCKET_REGION;
+const accessKey = process.env.AWS_ACCESS_KEY;
+const secretAccessKey = process.env.AWS_SECRET_ACCESS_KEY;
+
+const s3 = new S3Client({
+  credentials: {
+    accessKeyId: accessKey,
+    secretAccessKey: secretAccessKey,
+  },
+  region: bucketRegion,
+});
+
+// multer
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
+
+//upload.single('profileImage');
+
 const router = express.Router();
 
 const registerSchema = joi.object({
@@ -214,34 +244,87 @@ router.get('/users', authMiddleware, async (req, res, next) => {
       },
     },
   });
+
+  // s3에서 image 이름으로 사용자가 해당 이미지에 액세스할 수 있는 한시적인 url 생성
+  const getObjectParams = {
+    Bucket: bucketName,
+    Key: user.userInfos.profileImage,
+  };
+  const command = new GetObjectCommand(getObjectParams);
+  const imageUrl = await getSignedUrl(s3, command, { expiresIn: 3600 }); // 1h후 만료
+  user.profileImageUrl = imageUrl;
+
   return res.status(200).json({ data: user });
 });
 
+/** 랜덤 문자열 생성 함수 for 'unique' imageName to put in s3 bucket */
+const randomImageName = (bytes = 32) =>
+  crypto.randomBytes(bytes).toString('hex');
+
 /** 내 정보 수정 API */
-router.patch('/users', authMiddleware, async (req, res, next) => {
-  try {
-    const updateData = req.body; // name, age, gender, profileImage
-    const { userId } = req.user;
-    const userInfo = await prisma.userInfos.findFirst({
-      where: { userId: +userId },
-    });
-    if (!userInfo)
-      return res
-        .status(404)
-        .json({ message: '사용자 정보가 존재하지 않습니다.' });
-    // into DB
-    const updatedUserInfo = await prisma.userInfos.update({
-      data: { ...updateData },
-      where: { userId: +userId },
-    });
-    return res.status(200).json({
-      message: '성공적으로 수정이 완료되었습니다.',
-      data: updatedUserInfo,
-    });
-  } catch (err) {
-    next(err);
+router.patch(
+  '/users',
+  authMiddleware,
+  upload.single('profileImage'),
+  async (req, res, next) => {
+    try {
+      const userData = req.body; // name, age, gender
+      const { userId } = req.user;
+      const userInfo = await prisma.userInfos.findFirst({
+        where: { userId: +userId },
+      });
+      if (!userInfo)
+        return res
+          .status(404)
+          .json({ message: '사용자 정보가 존재하지 않습니다.' });
+
+      // 사용자가 profileImage를 수정하려고 한다면,
+      if (req.file) {
+        let params, command;
+        // 만약 이미 profileImage가 존재했다면,
+        // s3에서 기존의 profileImage 저장된 것 삭제
+        if (userInfo.profileImage) {
+          params = {
+            Bucket: bucketName,
+            Key: userInfo.profileImage,
+          };
+          command = new DeleteObjectCommand(params);
+          await s3.send(command);
+        }
+        // s3에 저장
+        // 그 전에 320x320px로 리사이징
+        const imageBuffer = await sharp(req.file.buffer)
+          .resize({ height: 320, width: 320, fit: 'contain' })
+          .toBuffer();
+        const imageName = randomImageName();
+        params = {
+          Bucket: bucketName,
+          Key: imageName,
+          Body: imageBuffer,
+          ContentType: req.file.mimetype,
+        };
+        command = new PutObjectCommand(params);
+        await s3.send(command); // command를 s3으로 보낸다.
+        userData.profileImage = imageName;
+      }
+
+      // DB에 저장
+      if (userData.age) userData.age = +userData.age; // age는 int 타입이다.
+      const updatedUserInfo = await prisma.userInfos.update({
+        data: {
+          ...userData,
+        },
+        where: { userId: +userId },
+      });
+      return res.status(200).json({
+        message: '성공적으로 수정이 완료되었습니다.',
+        data: updatedUserInfo,
+      });
+    } catch (err) {
+      next(err);
+    }
   }
-});
+);
 
 export default router;
 /**
