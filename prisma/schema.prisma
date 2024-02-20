@@ -7,52 +7,24 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Users {
-  userId        Int            @id @default(autoincrement()) @map("userId")
-  clientId      String?        @db.VarChar(255)
-  email         String?        @unique @map("email")
-  password      String?        @map("password")
-  role          UserRole       @default(USER) @map("role")
-  createdAt     DateTime       @default(now()) @map("createdAt")
-  updatedAt     DateTime       @updatedAt @map("updatedAt")
-  refreshTokens RefreshTokens?
-  resumes       Resumes[]
-  userInfos     UserInfos?
-  followedBy    Follows[]      @relation("followedBy")
-  following     Follows[]      @relation("following")
-
-  @@map("Users")
-}
-
-model Follows {
-  followedBy   Users @relation("followedBy", fields: [followedById], references: [userId])
-  followedById Int   @map("followedById")
-  following    Users @relation("following", fields: [followingId], references: [userId])
-  followingId  Int   @map("followingId")
-
-  createdAt DateTime @default(now()) @map("createdAt")
-  updatedAt DateTime @updatedAt @map("updatedAt")
-
-  @@id([followedById, followingId])
-  @@map("Follows")
-}
-
-model UserInfos {
-  userInfoId   Int      @id @default(autoincrement()) @map("userInfoId")
-  userId       Int      @unique @map("userId")
+model User {
+  id           Int      @id @default(autoincrement()) @map("id")
+  clientId     String?  @db.VarChar(255)
+  email        String?  @unique @map("email")
+  password     String?  @map("password")
+  role         UserRole @default(USER) @map("role")
   name         String   @map("name")
   age          Int?     @map("age")
-  gender       String?  @map("gender")
+  gender       Gender?  @map("gender")
   profileImage String?  @map("profileImage")
   createdAt    DateTime @default(now()) @map("createdAt")
   updatedAt    DateTime @updatedAt @map("updatedAt")
-  user         Users    @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  resume       Resume[]
 
-  @@map("UserInfos")
+  @@map("User")
 }
 
-model Resumes {
-  resumeId     Int          @id @default(autoincrement()) @map("resumeId")
+model Resume {
   userId       Int          @map("userId")
   title        String       @map("title")
   introduction String?      @map("introduction") @db.Text
@@ -60,23 +32,11 @@ model Resumes {
   status       ResumeStatus @default(APPLY) @map("status")
   createdAt    DateTime     @default(now()) @map("createdAt")
   updatedAt    DateTime     @updatedAt @map("updatedAt")
-  user         Users        @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  id           Int          @id @default(autoincrement()) @map("id")
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@index([userId], map: "Resumes_userId_fkey")
-  @@map("Resumes")
-}
-
-model RefreshTokens {
-  tokenId   Int      @id @default(autoincrement()) @map("tokenId")
-  userId    Int      @unique @map("userId")
-  token     String   @map("token")
-  ip        String   @map("ip")
-  userAgent String   @map("userAgent")
-  createdAt DateTime @default(now()) @map("createdAt")
-  expiresAt DateTime @map("expiresAt")
-  user      Users    @relation(fields: [userId], references: [userId], onDelete: Cascade)
-
-  @@map("RefreshTokens")
+  @@index([userId], map: "Resume_userId_fkey")
+  @@map("Resume")
 }
 
 enum UserRole {
@@ -92,4 +52,9 @@ enum ResumeStatus {
   INTERVIEW1
   INTERVIEW2
   FINAL_PASS
+}
+
+enum Gender {
+  F
+  M
 }

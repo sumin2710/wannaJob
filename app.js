@@ -1,34 +1,27 @@
 import express from 'express';
 import dotenv from 'dotenv';
-import UsersRouter from './routers/users.router.js';
-import AdminRouter from './routers/admin.router.js';
-import FollowsRouter from './routers/follows.router.js';
-import ResumesRouter from './routers/resumes.router.js';
-import errorHandlingMiddleware from './middlewares/error-handling.middleware.js';
+import UserRouter from './src/routes/user.router.js';
+import ResumeRouter from './src/routes/resume.router.js';
+import AdminRouter from './src/routes/admin.router.js';
+import errorHandlingMiddleware from './src/middlewares/error-handling.middleware.js';
 import cookieParser from 'cookie-parser';
-import options from './swagger.js';
-import swaggerJSDoc from 'swagger-jsdoc';
-import swaggerUi from 'swagger-ui-express';
+import session from 'express-session';
+import { sessionOption } from './src/utils/redis/redis.js';
 
 dotenv.config();
 
 const app = express();
 const PORT = 3032;
 
-// swagger
-const specs = swaggerJSDoc(options);
-app.use(
-  '/api-docs',
-  swaggerUi.serve,
-  swaggerUi.setup(specs, { explorer: true })
-);
+// session cookie
+app.use(cookieParser(process.env.COOKIE_SECRET));
+app.use(session(sessionOption));
 
 app.use(express.json());
-app.use(cookieParser());
 
-app.use('/api', [UsersRouter, ResumesRouter]);
 app.use('/admin', [AdminRouter]);
-app.use('/follow', [FollowsRouter]);
+app.use('/user', [UserRouter]);
+app.use('/resume', [ResumeRouter]);
 app.use(errorHandlingMiddleware);
 
 app.listen(PORT, () => {
