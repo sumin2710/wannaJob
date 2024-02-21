@@ -1,3 +1,6 @@
+import NotFoundError from '../errors/NotFoundError.js';
+import PermissionError from '../errors/PermissionError.js';
+
 export class ResumeService {
   constructor(resumeRepository) {
     this.resumeRepository = resumeRepository;
@@ -11,9 +14,10 @@ export class ResumeService {
   deleteResume = async (resumeId, userId) => {
     // 이력서 존재 유무 확인
     const isExistResume = await this.resumeRepository.getResumeById(resumeId);
-    if (!isExistResume) throw new Error('이력서 조회에 실패하였습니다.');
+    if (!isExistResume)
+      throw new NotFoundError('이력서 조회에 실패하였습니다.');
     if (isExistResume.userId !== userId)
-      throw new Error('삭제 권한이 없습니다.');
+      throw new PermissionError('삭제 권한이 없습니다.');
 
     await this.resumeRepository.deleteResume(resumeId);
   };
@@ -23,9 +27,10 @@ export class ResumeService {
     const isExistResume = await this.resumeRepository.getResumeById(
       resumeData.id
     );
-    if (!isExistResume) throw new Error('이력서 조회에 실패하였습니다.');
+    if (!isExistResume)
+      throw new NotFoundError('이력서 조회에 실패하였습니다.');
     if (isExistResume.userId !== resumeData.userId)
-      throw new Error('수정 권한이 없습니다.');
+      throw new PermissionError('수정 권한이 없습니다.');
 
     const resume = await this.resumeRepository.updateResume(resumeData);
     return resume;
@@ -38,9 +43,9 @@ export class ResumeService {
 
   getResume = async (resumeId, userId, userRole) => {
     const resume = await this.resumeRepository.getResumeById(resumeId);
-    if (!resume) throw new Error('이력서 조회에 실패하였습니다.');
+    if (!resume) throw new NotFoundError('이력서 조회에 실패하였습니다.');
     if (resume.userId !== userId && userRole !== 'HR_MANAGER')
-      throw new Error('조회 권한이 없습니다.');
+      throw new PermissionError('조회 권한이 없습니다.');
     return resume;
   };
 
@@ -55,7 +60,8 @@ export class ResumeService {
   updateResumeStatus = async (resumeId, status) => {
     // 이력서 존재 유무 확인
     const isExistResume = await this.resumeRepository.getResumeById(resumeId);
-    if (!isExistResume) throw new Error('이력서 조회에 실패하였습니다.');
+    if (!isExistResume)
+      throw new NotFoundError('이력서 조회에 실패하였습니다.');
 
     const resume = await this.resumeRepository.updateResumeStatus(
       resumeId,

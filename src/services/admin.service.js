@@ -1,3 +1,5 @@
+import NotFoundError from '../errors/NotFoundError.js';
+
 export class AdminService {
   constructor(userRepository) {
     this.userRepository = userRepository;
@@ -5,7 +7,7 @@ export class AdminService {
 
   upgradeUserRole = async (role, userId) => {
     const isExistUser = await this.userRepository.getUserById(userId);
-    if (!isExistUser) throw new Error('사용자가 존재하지 않습니다.');
+    if (!isExistUser) throw new NotFoundError('사용자가 존재하지 않습니다.');
 
     const userData = {
       id: +userId,
@@ -17,7 +19,7 @@ export class AdminService {
 
   deleteUser = async (userId) => {
     const isExistUser = await this.userRepository.getUserById(userId);
-    if (!isExistUser) throw new Error('사용자가 존재하지 않습니다.');
+    if (!isExistUser) throw new NotFoundError('사용자가 존재하지 않습니다.');
 
     await this.userRepository.deleteUser(userId);
   };

@@ -2,6 +2,8 @@ import { DeleteObjectCommand } from '@aws-sdk/client-s3';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { bucketName, s3 } from '../utils/multer/multer.js';
+import BadRequestError from '../errors/BadRequestError.js';
+import NotFoundError from '../errors/NotFoundError.js';
 
 export class UserService {
   constructor(userRepository) {
@@ -11,11 +13,11 @@ export class UserService {
   signUp = async (email, name, password, checkPassword) => {
     // 해당 사용자 존재 여부 확인
     const isExistUser = await this.userRepository.getUserByEmail(email);
-    if (isExistUser) throw new Error('이미 존재하는 사용자입니다.');
+    if (isExistUser) throw new BadRequestError('이미 존재하는 사용자입니다.');
 
     // 비밀번호 비교 검증
     if (password !== checkPassword)
-      throw new Error('비밀번호가 일치하지 않습니다.');
+      throw new BadRequestError('비밀번호가 일치하지 않습니다.');
 
     // 비밀번호 해시화
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -67,11 +69,11 @@ export class UserService {
   signIn = async (email, password, ip, userAgent) => {
     // 해당 사용자 존재 여부 확인
     const user = await this.userRepository.getUserByEmail(email);
-    if (!user) throw new Error('이름 또는 패스워드를 확인해주세요.');
+    if (!user) throw new BadRequestError('이름 또는 패스워드를 확인해주세요.');
 
     // 비밀번호 검증
     if (!(await bcrypt.compare(password, user.password)))
-      throw new Error('비밀번호가 일치하지 않습니다.');
+      throw new BadRequestError('비밀번호가 일치하지 않습니다.');
 
     // accessToken, refreshToken 발급
     const accessToken = jwt.sign(
@@ -115,7 +117,7 @@ export class UserService {
   updateUser = async (userData) => {
     // 해당 사용자 존재 여부 확인
     const isExistUser = await this.userRepository.getUserById(userData.id);
-    if (!isExistUser) throw new Error('존재하지 않는 사용자입니다.');
+    if (!isExistUser) throw new NotFoundError('존재하지 않는 사용자입니다.');
 
     // 만약 프로필 사진이 이미 있다면, s3의 기존 것 삭제
     if (isExistUser.profileImage) {

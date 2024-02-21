@@ -1,10 +1,14 @@
 export default function (err, req, res, next) {
-  console.error(err);
+  console.error(err.statusCode);
   if (err.name === 'ValidationError') {
     res.status(412).send(err.details[0].message); // joi에서 에러가 발생했을때 메시지 그대로 반환){
+  } else if (err.name === 'NotFoundError') {
+    res.status(404).send(err.message);
+  } else if (err.name === 'PermissionError') {
+    res.status(403).send(err.message);
+  } else if (err.name === 'BadRequestError') {
+    res.status(400).send(err.message);
+  } else {
+    res.status(500).send(`Internal Server Error....${err.message}`);
   }
-  res.status(500).send(err.message);
-  // !!!!수정사항!!!! : 특정 상태 코드를 err 처리 미들웨어에 전달해 커스텀하게 res 반환하게
-  // response에 err 정보 저장하기
-  //res.status(500).json({ message: '서버 내부에서 에러가 발생했습니다.' });
 }
