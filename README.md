@@ -24,4 +24,4 @@
 
 # ERD URL
 
-- https://drawsql.app/teams/sus-team-1/diagrams/wanna-job
+- https://drawsql.app/teams/sus-team-1/diagrams/wannajob
