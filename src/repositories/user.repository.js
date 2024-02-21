@@ -22,7 +22,7 @@ export class UserRepository {
   };
 
   getUserById = async (userId) => {
-    const user = await this.prisma.user.findFirst({
+    const user = await this.prisma.user.findUnique({
       where: { id: +userId },
     });
     return user;
