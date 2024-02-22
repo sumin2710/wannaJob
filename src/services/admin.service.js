@@ -13,7 +13,8 @@ export class AdminService {
       id: +userId,
       role: role,
     };
-    const user = await this.userRepository.updateUser(userData);
+    await this.userRepository.updateUser(userData);
+    const user = this.userRepository.getUserById(userId);
     return user;
   };
 
@@ -22,5 +23,10 @@ export class AdminService {
     if (!isExistUser) throw new NotFoundError('사용자가 존재하지 않습니다.');
 
     await this.userRepository.deleteUser(userId);
+  };
+
+  getAllUsers = async () => {
+    const users = await this.userRepository.getAllUsers();
+    return users;
   };
 }

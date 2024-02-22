@@ -1,58 +1,54 @@
-export class ResumeRepository {
-  constructor(prisma) {
-    this.prisma = prisma;
-  }
+import dataSource from '../typeorm/index.js';
 
+export class ResumeRepository {
   createResume = async (resumeData) => {
-    const newResume = await this.prisma.resume.create({
-      data: {
-        ...resumeData,
-      },
-    });
-    return newResume;
+    const resume = await dataSource.getRepository('Resume').save(resumeData);
+    return resume;
   };
 
   getResumeById = async (resumeId) => {
-    const resume = await this.prisma.resume.findUnique({
+    const resume = await dataSource.getRepository('Resume').findOne({
       where: { id: +resumeId },
     });
     return resume;
   };
 
   deleteResume = async (resumeId) => {
-    await this.prisma.resume.delete({
-      where: { id: +resumeId },
+    await dataSource.getRepository('Resume').delete({
+      id: +resumeId,
     });
     return;
   };
 
   updateResume = async (resumeData) => {
-    const resume = await this.prisma.resume.update({
-      data: { ...resumeData },
-      where: { id: +resumeData.id },
-    });
-    return resume;
+    await dataSource.getRepository('Resume').update(
+      {
+        id: +resumeData.id,
+      },
+      resumeData
+    );
   };
 
   getResumesByUserId = async (userId) => {
-    const resumes = await this.prisma.resume.findMany({
+    const resumes = await dataSource.getRepository('Resume').find({
       where: { userId: +userId },
     });
     return resumes;
   };
 
   getAllResumes = async (orderKey, orderValue) => {
-    const resumes = await this.prisma.resume.findMany({
-      orderBy: { [orderKey]: orderValue },
+    const resumes = await dataSource.getRepository('Resume').find({
+      order: { [orderKey]: orderValue },
     });
     return resumes;
   };
 
   updateResumeStatus = async (resumeId, status) => {
-    const resume = await this.prisma.resume.update({
-      where: { id: +resumeId },
-      data: { status: status },
-    });
-    return resume;
+    await dataSource.getRepository('Resume').update(
+      {
+        id: +resumeId,
+      },
+      { status: status }
+    );
   };
 }

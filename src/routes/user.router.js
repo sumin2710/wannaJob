@@ -1,9 +1,8 @@
 import express from 'express';
-import { prisma } from '../utils/prisma/index.js';
 import { UserController } from '../controllers/user.controller.js';
 import { UserService } from '../services/user.service.js';
 import { UserRepository } from '../repositories/user.repository.js';
-
+import dataSource from '../typeorm/index.js';
 import {
   validateSignup,
   validateUpdateUser,
@@ -14,7 +13,7 @@ import { upload } from '../utils/multer/multer.js';
 
 const router = express.Router();
 
-const userRepository = new UserRepository(prisma);
+const userRepository = new UserRepository(dataSource);
 const userService = new UserService(userRepository);
 const userController = new UserController(userService);
 

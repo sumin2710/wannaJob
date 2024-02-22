@@ -25,4 +25,14 @@ export class AdminController {
       next(err);
     }
   };
+
+  /** 사용자 목록 전체 조회 API */
+  getAllUsers = async (req, res, next) => {
+    try {
+      const users = await this.adminService.getAllUsers();
+      return res.status(200).json({ users });
+    } catch (err) {
+      next(err);
+    }
+  };
 }

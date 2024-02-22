@@ -1,28 +1,23 @@
-export class UserRepository {
-  constructor(prisma) {
-    this.prisma = prisma;
-  }
+import dataSource from '../typeorm/index.js';
 
+export class UserRepository {
   signUp = async (email, name, hashedPassword) => {
-    const newUser = await this.prisma.user.create({
-      data: {
-        email,
-        password: hashedPassword,
-        name,
-      },
+    await dataSource.getRepository('User').insert({
+      email,
+      password: hashedPassword,
+      name,
     });
-    return newUser;
   };
 
   getUserByEmail = async (email) => {
-    const user = await this.prisma.user.findUnique({
+    const user = await dataSource.getRepository('User').findOne({
       where: { email: email },
     });
     return user;
   };
 
   getUserById = async (userId) => {
-    const user = await this.prisma.user.findUnique({
+    const user = await dataSource.getRepository('User').findOne({
       where: { id: +userId },
     });
     return user;
@@ -30,19 +25,23 @@ export class UserRepository {
 
   updateUser = async (userData) => {
     if (userData.age) userData.age = +userData.age;
-    const updatedUser = await this.prisma.user.update({
-      where: { id: +userData.id },
-      data: {
-        ...userData,
+    await dataSource.getRepository('User').update(
+      {
+        id: +userData.id,
       },
-    });
-    return updatedUser;
+      userData
+    );
   };
 
   deleteUser = async (userId) => {
-    await this.prisma.user.delete({
-      where: { id: +userId },
+    await dataSource.getRepository('User').delete({
+      id: +userId,
     });
     return;
+  };
+
+  getAllUsers = async () => {
+    const users = await dataSource.getRepository('User').find();
+    return users;
   };
 }

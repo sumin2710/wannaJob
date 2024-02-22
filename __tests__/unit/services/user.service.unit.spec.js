@@ -2,9 +2,11 @@ import { jest } from '@jest/globals';
 import { UserService } from '../../../src/services/user.service';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
+import { bucketName, s3 } from '../../../src/utils/multer/multer.js';
 
 jest.mock('bcrypt');
 jest.mock('jsonwebtoken');
+jest.mock('s3');
 
 let mockUserRepository = {
   signUp: jest.fn(),

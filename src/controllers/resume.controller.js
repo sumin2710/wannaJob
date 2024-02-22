@@ -34,6 +34,7 @@ export class ResumeController {
       resumeData.id = +resumeId;
       resumeData.userId = +req.userId;
       const resume = await this.resumeService.updateResume(resumeData);
+
       return res.status(201).json({ resume });
     } catch (err) {
       next(err);

@@ -1,5 +1,5 @@
 import express from 'express';
-import { prisma } from '../utils/prisma/index.js';
+import dataSource from '../typeorm/index.js';
 import { ResumeController } from '../controllers/resume.controller.js';
 import { ResumeService } from '../services/resume.service.js';
 import { ResumeRepository } from '../repositories/resume.repository.js';
@@ -8,13 +8,14 @@ import {
   validateCreateResume,
   validateUpdateResume,
   validateResumeStatus,
+  validateOrder,
 } from '../middlewares/joi-validation.middleware.js';
 import { authenticateUser } from '../middlewares/auth.middleware.js';
 import { checkRole } from '../middlewares/auth-role.middleware.js';
 
 const router = express.Router();
 
-const resumeRepository = new ResumeRepository(prisma);
+const resumeRepository = new ResumeRepository(dataSource);
 const resumeService = new ResumeService(resumeRepository);
 const resumeController = new ResumeController(resumeService);
 
@@ -48,6 +49,7 @@ router.get(
   '/',
   authenticateUser,
   checkRole('HR_MANAGER'),
+  validateOrder,
   resumeController.getAllResumes
 );
 

@@ -1,5 +1,5 @@
 import express from 'express';
-import { prisma } from '../utils/prisma/index.js';
+import dataSource from '../typeorm/index.js';
 import { AdminController } from '../controllers/admin.controller.js';
 import { AdminService } from '../services/admin.service.js';
 import { UserRepository } from '../repositories/user.repository.js';
@@ -10,7 +10,7 @@ import { checkRole } from '../middlewares/auth-role.middleware.js';
 
 const router = express.Router();
 
-const userRepository = new UserRepository(prisma);
+const userRepository = new UserRepository(dataSource);
 const adminService = new AdminService(userRepository);
 const adminController = new AdminController(adminService);
 
@@ -29,6 +29,14 @@ router.delete(
   authenticateUser,
   checkRole('ADMIN'),
   adminController.deleteUser
+);
+
+/** 사용자 전체 목록 조회 API */
+router.get(
+  '/users',
+  authenticateUser,
+  checkRole('ADMIN'),
+  adminController.getAllUsers
 );
 
 export default router;

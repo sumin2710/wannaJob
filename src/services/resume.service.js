@@ -1,3 +1,4 @@
+import BadRequestError from '../errors/BadRequestError.js';
 import NotFoundError from '../errors/NotFoundError.js';
 import PermissionError from '../errors/PermissionError.js';
 
@@ -32,7 +33,8 @@ export class ResumeService {
     if (isExistResume.userId !== resumeData.userId)
       throw new PermissionError('수정 권한이 없습니다.');
 
-    const resume = await this.resumeRepository.updateResume(resumeData);
+    await this.resumeRepository.updateResume(resumeData);
+    const resume = await this.resumeRepository.getResumeById(resumeData.id);
     return resume;
   };
 
@@ -63,10 +65,8 @@ export class ResumeService {
     if (!isExistResume)
       throw new NotFoundError('이력서 조회에 실패하였습니다.');
 
-    const resume = await this.resumeRepository.updateResumeStatus(
-      resumeId,
-      status
-    );
+    await this.resumeRepository.updateResumeStatus(resumeId, status);
+    const resume = await this.resumeRepository.getResumeById(resumeId);
     return resume;
   };
 }

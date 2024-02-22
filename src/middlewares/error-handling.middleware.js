@@ -1,5 +1,5 @@
 export default function (err, req, res, next) {
-  console.error(err.statusCode);
+  console.error(err);
   if (err.name === 'ValidationError') {
     res.status(412).send(err.details[0].message); // joi에서 에러가 발생했을때 메시지 그대로 반환){
   } else if (err.name === 'NotFoundError') {

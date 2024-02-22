@@ -149,3 +149,34 @@ export const validateRole = async (req, res, next) => {
     res.status(400).send(err.details[0].message);
   }
 };
+
+const orderSchema = Joi.object({
+  orderKey: Joi.string()
+    .valid(
+      'id',
+      'userId',
+      'title',
+      'introduction',
+      'hobby',
+      'status',
+      'createdAt',
+      'updatedAt'
+    )
+    .messages({
+      'any.only':
+        'orderKey는 id, userId, title, introduction, hobby, status, createdAt, updatedAt 중 하나여야 합니다.',
+    }),
+  orderValue: Joi.string()
+    .valid('asc', 'desc')
+    .messages({ 'any.only': 'orderValue는 asc나 desc 중 하나여야 합니다.' }),
+});
+
+export const validateOrder = async (req, res, next) => {
+  try {
+    const validation = await orderSchema.validateAsync(req.query);
+    req.query = validation;
+    next();
+  } catch (err) {
+    res.status(400).send(err.details[0].message);
+  }
+};

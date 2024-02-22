@@ -22,7 +22,8 @@ export class UserService {
     // 비밀번호 해시화
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const user = await this.userRepository.signUp(email, name, hashedPassword);
+    await this.userRepository.signUp(email, name, hashedPassword);
+    const user = await this.userRepository.getUserByEmail(email);
     return {
       id: user.id,
       name: user.name,
@@ -53,6 +54,7 @@ export class UserService {
 
   getUserById = async (userId) => {
     const user = await this.userRepository.getUserById(userId);
+
     return {
       id: user.id,
       name: user.name,
@@ -133,7 +135,9 @@ export class UserService {
       }
     }
 
-    const user = await this.userRepository.updateUser(userData);
+    await this.userRepository.updateUser(userData);
+
+    const user = await this.userRepository.getUserById(userData.id);
     return {
       id: user.id,
       name: user.name,

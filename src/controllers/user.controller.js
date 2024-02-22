@@ -60,6 +60,7 @@ export class UserController {
     try {
       const userId = req.userId;
       const user = await this.userService.getUserById(userId);
+
       return res.status(200).json({ user });
     } catch (err) {
       next(err);
@@ -72,6 +73,7 @@ export class UserController {
       userData.id = req.userId; // 사용자 유저 아이디
       if (req.file) userData.profileImage = req.file.location; // 사용자 입력 파일 경로
       const updatedUser = await this.userService.updateUser(userData);
+
       return res.status(200).json({ updatedUser });
     } catch (err) {
       next(err);
