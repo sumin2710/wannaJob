@@ -1,6 +1,6 @@
 import Joi from 'joi';
 
-const signupSchema = Joi.object({
+export const signupSchema = Joi.object({
   email: Joi.string().email({
     minDomainSegments: 2,
     tlds: { allow: ['com', 'net'] },
@@ -31,7 +31,7 @@ export const validateSignup = async (req, res, next) => {
   }
 };
 
-const updateUserSchema = Joi.object({
+export const updateUserSchema = Joi.object({
   password: Joi.string()
     .pattern(new RegExp('^(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{6,30}$'))
     .messages({
@@ -61,7 +61,7 @@ export const validateUpdateUser = async (req, res, next) => {
   }
 };
 
-const createResumeSchema = Joi.object({
+export const createResumeSchema = Joi.object({
   title: Joi.string().min(2).max(30).required().messages({
     'any.required': '제목은 필수 입력 항목입니다.',
     'string.max': '제목은 30글자 이내의 문자열입니다.',
@@ -87,7 +87,7 @@ export const validateCreateResume = async (req, res, next) => {
   }
 };
 
-const updateResumeSchema = Joi.object({
+export const updateResumeSchema = Joi.object({
   title: Joi.string().min(2).max(30).messages({
     'string.max': '제목은 30글자 이내의 문자열입니다.',
     'string.min': '제목은 2글자 이상의 문자열입니다.',
@@ -112,7 +112,7 @@ export const validateUpdateResume = async (req, res, next) => {
   }
 };
 
-const resumeStatusSchema = Joi.object({
+export const resumeStatusSchema = Joi.object({
   status: Joi.string()
     .valid('APPLY', 'DROP', 'PASS', 'INTERVIEW1', 'INTERVIEW2', 'FINAL_PASS')
     .required()
@@ -133,7 +133,7 @@ export const validateResumeStatus = async (req, res, next) => {
   }
 };
 
-const roleSchema = Joi.object({
+export const roleSchema = Joi.object({
   role: Joi.string().valid('USER', 'HR_MANAGER', 'ADMIN').required().messages({
     'any.required': '사용자의 권한은 필수 입력 항목입니다.',
     'any.only': '사용자의 권한은 USER, HR_MANAGER, ADMIN 중 하나여야 합니다.',
@@ -150,7 +150,7 @@ export const validateRole = async (req, res, next) => {
   }
 };
 
-const orderSchema = Joi.object({
+export const orderSchema = Joi.object({
   orderKey: Joi.string()
     .valid(
       'id',

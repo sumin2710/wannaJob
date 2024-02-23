@@ -17,7 +17,7 @@ export class UserService {
 
     // 비밀번호 비교 검증
     if (password !== checkPassword)
-      throw new BadRequestError('비밀번호가 일치하지 않습니다.');
+      throw new ValidationError('비밀번호가 일치하지 않습니다.');
 
     // 비밀번호 해시화
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -75,7 +75,7 @@ export class UserService {
 
     // 비밀번호 검증
     if (!(await bcrypt.compare(password, user.password)))
-      throw new BadRequestError('비밀번호가 일치하지 않습니다.');
+      throw new ValidationError('비밀번호가 일치하지 않습니다.');
 
     // accessToken, refreshToken 발급
     const accessToken = jwt.sign(
